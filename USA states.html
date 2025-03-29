@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estados y Acrónimos - Voz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        .highlight {
+            font-size: 3em;
+            font-weight: bold;
+            color: #0078d7;
+            margin: 20px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #0078d7;
+            background-color: #0078d7;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005a9e;
+        }
+        #result {
+            font-size: 1.5em;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #incorrect-guess {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 5px;
+        }
+        #correct-state {
+            font-size: 1.5em;
+            color: #d9534f;
+            margin-top: 10px;
+        }
+        #hint {
+            font-size: 1.2em;
+            color: #0078d7; /* Hint in blue */
+            margin-top: 10px;
+        }
+        #streak {
+            font-size: 1.2em;
+            color: #28a745; /* Green for emphasis */
+        }
+        #best-streak {
+            font-size: 1.2em;
+            color: #0078d7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aprende los Acrónimos con tu Voz</h1>
+    <p>Di el nombre del estado correspondiente al acrónimo mostrado:</p>
+
+    <div id="acronym-display" class="highlight">AL</div>
+    <button onclick="startRecognition()">Hablar</button>
+    <p id="result"></p>
+    <p id="incorrect-guess"></p>
+    <p id="correct-state"></p>
+    <p id="hint"></p>
+    <p id="streak">Racha actual: 0</p>
+    <p id="best-streak">Mejor racha: 0</p>
+
+    <script>
+       const states = [
+    { name: "Alabama", acronym: "AL", variations: ["alabama", "ala", "bama"] },
+    { name: "Alaska", acronym: "AK", variations: ["alaska", "alas", "al"] },
+    { name: "Arizona", acronym: "AZ", variations: ["arizona", "ari", "zona"] },
+    { name: "Arkansas", acronym: "AR", variations: ["arkansas", "arkan", "ark"] },
+    { name: "California", acronym: "CA", variations: ["california", "cali", "cal"] },
+    { name: "Colorado", acronym: "CO", variations: ["colorado", "colo", "color"] },
+    { name: "Connecticut", acronym: "CT", variations: ["connecticut", "conn", "connect"] },
+    { name: "Delaware", acronym: "DE", variations: ["delaware", "del", "dela"] },
+    { name: "Florida", acronym: "FL", variations: ["florida", "flo", "flor"] },
+    { name: "Georgia", acronym: "GA", variations: ["georgia", "geo", "georg"] },
+    { name: "Hawaii", acronym: "HI", variations: ["hawaii", "haw", "hi"] },
+    { name: "Idaho", acronym: "ID", variations: ["idaho", "ida", "ho"] },
+    { name: "Illinois", acronym: "IL", variations: ["illinois", "ill", "illino"] },
+    { name: "Indiana", acronym: "IN", variations: ["indiana", "ind", "indi"] },
+    { name: "Iowa", acronym: "IA", variations: ["iowa", "io", "iwa"] },
+    { name: "Kansas", acronym: "KS", variations: ["kansas", "kan", "kans"] },
+    { name: "Kentucky", acronym: "KY", variations: ["kentucky", "kent", "ky"] },
+    { name: "Louisiana", acronym: "LA", variations: ["louisiana", "lou", "louis"] },
+    { name: "Maine", acronym: "ME", variations: ["maine", "mai", "main"] },
+    { name: "Maryland", acronym: "MD", variations: ["maryland", "mary", "md"] },
+    { name: "Massachusetts", acronym: "MA", variations: ["massachusetts", "mass", "ma"] },
+    { name: "Michigan", acronym: "MI", variations: ["michigan", "mich", "mi"] },
+    { name: "Minnesota", acronym: "MN", variations: ["minnesota", "minn", "min"] },
+    { name: "Mississippi", acronym: "MS", variations: ["mississippi", "miss", "misi"] },
+    { name: "Missouri", acronym: "MO", variations: ["missouri", "miss", "misso"] },
+    { name: "Montana", acronym: "MT", variations: ["montana", "mont", "mt"] },
+    { name: "Nebraska", acronym: "NE", variations: ["nebraska", "neb", "ne"] },
+    { name: "Nevada", acronym: "NV", variations: ["nevada", "nev", "ne"] },
+    { name: "New Hampshire", acronym: "NH", variations: ["new hampshire", "nh", "hampshire"] },
+    { name: "New Jersey", acronym: "NJ", variations: ["new jersey", "nj", "jersey"] },
+    { name: "New Mexico", acronym: "NM", variations: ["new mexico", "nm", "mexico"] },
+    { name: "New York", acronym: "NY", variations: ["new york", "ny", "york"] },
+    { name: "North Carolina", acronym: "NC", variations: ["north carolina", "nc", "carolina"] },
+    { name: "North Dakota", acronym: "ND", variations: ["north dakota", "nd", "dakota"] },
+    { name: "Ohio", acronym: "OH", variations: ["ohio", "ohi", "oh"] },
+    { name: "Oklahoma", acronym: "OK", variations: ["oklahoma", "okla", "ok"] },
+    { name: "Oregon", acronym: "OR", variations: ["oregon", "ore", "or"] },
+    { name: "Pennsylvania", acronym: "PA", variations: ["pennsylvania", "penn", "pa"] },
+    { name: "Rhode Island", acronym: "RI", variations: ["rhode island", "ri", "rhode"] },
+    { name: "South Carolina", acronym: "SC", variations: ["south carolina", "sc", "carolina"] },
+    { name: "South Dakota", acronym: "SD", variations: ["south dakota", "sd", "dakota"] },
+    { name: "Tennessee", acronym: "TN", variations: ["tennessee", "tenn", "tn"] },
+    { name: "Texas", acronym: "TX", variations: ["texas", "tex", "tx"] },
+    { name: "Utah", acronym: "UT", variations: ["utah", "uta", "ut"] },
+    { name: "Vermont", acronym: "VT", variations: ["vermont", "verm", "ver"] },
+    { name: "Virginia", acronym: "VA", variations: ["virginia", "vir", "va"] },
+    { name: "Washington", acronym: "WA", variations: ["washington", "wash", "wa"] },
+    { name: "West Virginia", acronym: "WV", variations: ["west virginia", "wv", "virginia"] },
+    { name: "Wisconsin", acronym: "WI", variations: ["wisconsin", "wis", "wi"] },
+    { name: "Wyoming", acronym: "WY", variations: ["wyoming", "wyo", "wy"] }
+];
+
+        let currentStreak = 0;
+        let bestStreak = 0;
+
+        function getRandomAcronym() {
+            const randomState = states[Math.floor(Math.random() * states.length)];
+            return randomState;
+        }
+
+        function updateAcronymDisplay() {
+            const randomState = getRandomAcronym();
+            const acronymDisplay = document.getElementById("acronym-display");
+            acronymDisplay.textContent = randomState.acronym;
+            acronymDisplay.dataset.stateName = randomState.name;
+            acronymDisplay.dataset.variations = randomState.variations.join(",");
+        }
+
+        function capitalizeFirstLetter(name) {
+            return name.split(" ")
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(" ");
+        }
+
+        function updateStreak(isCorrect) {
+            const streakDisplay = document.getElementById("streak");
+            const bestStreakDisplay = document.getElementById("best-streak");
+
+            if (isCorrect) {
+                currentStreak++;
+                if (currentStreak > bestStreak) {
+                    bestStreak = currentStreak;
+                }
+            } else {
+                currentStreak = 0;
+            }
+
+            streakDisplay.textContent = `Racha actual: ${currentStreak}`;
+            bestStreakDisplay.textContent = `Mejor racha: ${bestStreak}`;
+        }
+
+        function startRecognition() {
+            if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+                alert("Tu navegador no soporta reconocimiento de voz.");
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const spokenText = event.results[0][0].transcript.toLowerCase().trim();
+                const acronymDisplay = document.getElementById("acronym-display");
+                const correctStateName = acronymDisplay.dataset.stateName.toLowerCase();
+                const variations = acronymDisplay.dataset.variations.split(",");
+
+                const result = document.getElementById("result");
+                const incorrectGuessParagraph = document.getElementById("incorrect-guess");
+                const correctStateParagraph = document.getElementById("correct-state");
+                const hintParagraph = document.getElementById("hint");
+
+                if (variations.some(variation => spokenText.includes(variation))) { // Accept similar inputs
+                    result.textContent = "¡Correcto! 🎉";
+                    result.style.color = "green";
+                    incorrectGuessParagraph.textContent = ""; // Clear incorrect message
+                    correctStateParagraph.textContent = ""; // Clear correction
+                    hintParagraph.textContent = ""; // Clear hint
+                    updateStreak(true); // Update streak for a correct answer
+                    updateAcronymDisplay(); // Move to the next acronym
+                } else {
+                    result.textContent = "Incorrecto.";
+                    result.style.color = "red";
+                    incorrectGuessParagraph.textContent = `Dijiste: ${capitalizeFirstLetter(spokenText)}.`;
+                    correctStateParagraph.textContent = `El nombre correcto es: ${capitalizeFirstLetter(correctStateName)}.`;
+                    hintParagraph.textContent = `Pronunciación sugerida: '${capitalizeFirstLetter(correctStateName)}'.`;
+                    updateStreak(false); // Reset streak for an incorrect answer
+                }
+            };
+
+            recognition.onerror = function(event) {
+                alert("Ocurrió un error en el reconocimiento de voz: " + event.error);
+            };
+        }
+
+        // Start with a random acronym on load
+        updateAcronymDisplay();
+    </script>
+</body>
+</html>
